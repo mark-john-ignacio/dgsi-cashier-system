@@ -21,4 +21,33 @@ class Enrollment extends Model
     {
         return $this->belongsTo(SchoolYear::class);
     }
+
+    public function ledgerEntries()
+    {
+        return $this->hasMany(LedgerEntry::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function totalAssessed(): float
+    {
+        return round((float) $this->ledgerEntries()->active()->sum('amount'), 2);
+    }
+
+    public function totalPaid(): float
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('payments')) {
+            return 0.0;
+        }
+
+        return round((float) $this->payments()->whereNull('voided_at')->sum('amount'), 2);
+    }
+
+    public function balance(): float
+    {
+        return round($this->totalAssessed() - $this->totalPaid(), 2);
+    }
 }
