@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeeStructureController;
 use App\Http\Controllers\FeeTypeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolYearController;
 use App\Http\Controllers\SlipController;
 use App\Http\Controllers\StudentController;
@@ -24,9 +25,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/payments/{payment}/void', [StudentLedgerController::class, 'voidPayment'])->name('payments.void');
     Route::get('/slips/{payment}', [SlipController::class, 'show'])->name('slips.show');
 
-    // Placeholders replaced by real report controllers in Task 12.
-    Route::get('/reports/statement/{enrollment}', fn () => abort(501))->name('reports.statement');
-    Route::get('/reports/notice/{enrollment}', fn () => abort(501))->name('reports.notice');
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/daily', [ReportController::class, 'daily'])->name('daily');
+        Route::get('/unpaid', [ReportController::class, 'unpaid'])->name('unpaid');
+        Route::get('/notices', [ReportController::class, 'batchNotices'])->name('notices.batch');
+        Route::get('/notice/{enrollment}', [ReportController::class, 'notice'])->name('notice');
+        Route::get('/statement/{enrollment}', [ReportController::class, 'statement'])->name('statement');
+    });
 
     Route::resource('students', StudentController::class)->only(['index', 'create', 'store', 'edit', 'update']);
     Route::post('students/{student}/register', [StudentController::class, 'register'])->name('students.register');
