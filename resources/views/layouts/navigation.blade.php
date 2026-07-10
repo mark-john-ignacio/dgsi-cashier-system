@@ -15,6 +15,13 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('students.search')" :active="request()->routeIs('students.search')">Find Student</x-nav-link>
+                    <x-nav-link :href="route('students.index')" :active="request()->routeIs('students.index')">Students</x-nav-link>
+                    <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">Reports</x-nav-link>
+                    @if (auth()->user()->isAdmin())
+                        <x-nav-link :href="route('fee-structures.index')" :active="request()->routeIs('fee-structures.*')">Fees</x-nav-link>
+                        <x-nav-link :href="route('school-years.index')" :active="request()->routeIs('school-years.*')">School Years</x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +77,13 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('students.search')" :active="request()->routeIs('students.search')">Find Student</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('students.index')" :active="request()->routeIs('students.index')">Students</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">Reports</x-responsive-nav-link>
+            @if (auth()->user()->isAdmin())
+                <x-responsive-nav-link :href="route('fee-structures.index')" :active="request()->routeIs('fee-structures.*')">Fees</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('school-years.index')" :active="request()->routeIs('school-years.*')">School Years</x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
