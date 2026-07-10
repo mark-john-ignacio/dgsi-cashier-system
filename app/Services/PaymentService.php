@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Services;
+
+use App\Exceptions\DuplicateOrNumber;
+use App\Models\Enrollment;
+use App\Models\Payment;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+
+class PaymentService
+{
+    public function record(Enrollment $enrollment, string $orNumber, string $paymentDate,
+        float $amount, string $method, User $receivedBy): Payment
+    {
+        return DB::transaction(function () use ($enrollment, $orNumber, $paymentDate, $amount, $method, $receivedBy) {
+            $exists = Payment::where('school_year_id', $enrollment->school_year_id)
+                ->where('or_number', $orNumber)->exists();
+            if ($exists) {
+                throw new DuplicateOrNumber("OR number {$orNumber} is already used this school year.");
+            }
+
+            $payment = Payment::create([
+                'enrollment_id' => $enrollment->id,
+                'school_year_id' => $enrollment->school_year_id,
+                'or_number' => $orNumber,
+                'payment_date' => $paymentDate,
+                'amount' => $amount,
+                'method' => $method,
+                'received_by' => $receivedBy->id,
+            ]);
+
+            $remaining = $amount;
+            $charges = $enrollment->ledgerEntries()->active()
+                ->where('type', 'charge')->orderBy('id')->get();
+
+            foreach ($charges as $charge) {
+                if ($remaining <= 0.005) {
+                    break;
+                }
+                $alreadyPaid = (float) $charge->allocations()
+                    ->whereHas('payment', fn ($q) => $q->whereNull('voided_at'))
+                    ->sum('amount');
+                $unpaid = round((float) $charge->amount - $alreadyPaid, 2);
+                if ($unpaid <= 0.005) {
+                    continue;
+                }
+                $applied = min($unpaid, $remaining);
+                $payment->allocations()->create([
+                    'ledger_entry_id' => $charge->id,
+                    'amount' => $applied,
+                ]);
+                $remaining = round($remaining - $applied, 2);
+            }
+            // Any remainder stays unallocated on the payment = advance credit.
+
+            return $payment;
+        });
+    }
+}

@@ -39,10 +39,6 @@ class Enrollment extends Model
 
     public function totalPaid(): float
     {
-        if (! \Illuminate\Support\Facades\Schema::hasTable('payments')) {
-            return 0.0;
-        }
-
         return round((float) $this->payments()->whereNull('voided_at')->sum('amount'), 2);
     }
 
