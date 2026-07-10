@@ -32,6 +32,16 @@ class Enrollment extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function promissoryNotes()
+    {
+        return $this->hasMany(PromissoryNote::class);
+    }
+
+    public function pendingPromissoryTotal(): float
+    {
+        return round((float) $this->promissoryNotes()->pending()->sum('amount'), 2);
+    }
+
     public function totalAssessed(): float
     {
         return round((float) $this->ledgerEntries()->active()->sum('amount'), 2);
