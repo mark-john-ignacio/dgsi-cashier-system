@@ -15,6 +15,7 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('students.search')" :active="request()->routeIs('students.search')">Find Student</x-nav-link>
                 </div>
             </div>
 
@@ -70,6 +71,7 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('students.search')" :active="request()->routeIs('students.search')">Find Student</x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
