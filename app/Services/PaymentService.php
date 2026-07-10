@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Exceptions\DuplicateOrNumber;
+use App\Exceptions\VoidNotAllowed;
+use App\Models\AuditLog;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\User;
@@ -54,7 +56,38 @@ class PaymentService
             }
             // Any remainder stays unallocated on the payment = advance credit.
 
+            AuditLog::record($receivedBy, 'payment.recorded', $payment, [
+                'or_number' => $orNumber, 'amount' => (string) $amount,
+            ]);
+
             return $payment;
+        });
+    }
+
+    public function void(Payment $payment, User $by, string $reason): void
+    {
+        if ($payment->isVoided()) {
+            throw new VoidNotAllowed('This payment is already voided.');
+        }
+        if (trim($reason) === '') {
+            throw new VoidNotAllowed('A void reason is required.');
+        }
+        if (! $by->isAdmin() && ! $payment->created_at->isToday()) {
+            throw new VoidNotAllowed('Cashiers may only void payments recorded today. Ask an admin.');
+        }
+
+        DB::transaction(function () use ($payment, $by, $reason) {
+            $payment->forceFill([
+                'voided_at' => now(),
+                'voided_by' => $by->id,
+                'void_reason' => trim($reason),
+            ])->save();
+
+            AuditLog::record($by, 'payment.voided', $payment, [
+                'or_number' => $payment->or_number,
+                'amount' => (string) $payment->amount,
+                'reason' => trim($reason),
+            ]);
         });
     }
 }
