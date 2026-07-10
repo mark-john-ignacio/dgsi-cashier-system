@@ -1,8 +1,12 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeeStructureController;
+use App\Http\Controllers\FeeTypeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SchoolYearController;
 use App\Http\Controllers\SlipController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentLedgerController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +27,18 @@ Route::middleware('auth')->group(function () {
     // Placeholders replaced by real report controllers in Task 12.
     Route::get('/reports/statement/{enrollment}', fn () => abort(501))->name('reports.statement');
     Route::get('/reports/notice/{enrollment}', fn () => abort(501))->name('reports.notice');
+
+    Route::resource('students', StudentController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+    Route::post('students/{student}/register', [StudentController::class, 'register'])->name('students.register');
+
+    Route::middleware('role:admin')->group(function () {
+        Route::get('fee-types', [FeeTypeController::class, 'index'])->name('fee-types.index');
+        Route::post('fee-types', [FeeTypeController::class, 'store'])->name('fee-types.store');
+        Route::resource('fee-structures', FeeStructureController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+        Route::get('school-years', [SchoolYearController::class, 'index'])->name('school-years.index');
+        Route::post('school-years', [SchoolYearController::class, 'store'])->name('school-years.store');
+        Route::post('school-years/{schoolYear}/activate', [SchoolYearController::class, 'activate'])->name('school-years.activate');
+    });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
