@@ -32,9 +32,7 @@
                         @endif
                     </td>
                     <td class="text-right">
-                        @if (\Illuminate\Support\Facades\Route::has('ledger.show'))
-                            <a href="{{ route('ledger.show', $e) }}" class="text-blue-600 underline">Open</a>
-                        @endif
+                        <a href="{{ route('ledger.show', $e) }}" class="text-blue-600 underline">Open</a>
                     </td>
                 </tr>
             @empty
