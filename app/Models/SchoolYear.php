@@ -24,7 +24,10 @@ class SchoolYear extends Model
     {
         DB::transaction(function () {
             static::query()->update(['is_active' => false]);
-            $this->forceFill(['is_active' => true])->save();
+            // Write via the query builder: if this year was already active, the model
+            // is not dirty and save() would issue no UPDATE, leaving no active year.
+            static::whereKey($this->getKey())->update(['is_active' => true]);
+            $this->forceFill(['is_active' => true])->syncOriginal();
         });
     }
 }

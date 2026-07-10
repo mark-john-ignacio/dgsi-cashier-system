@@ -27,4 +27,26 @@ class SchoolYearTest extends TestCase
     {
         $this->assertNull(SchoolYear::active());
     }
+
+    public function test_activating_an_already_active_year_keeps_it_active(): void
+    {
+        $year = SchoolYear::factory()->create(['is_active' => true]);
+
+        $year->activate();
+
+        $this->assertTrue($year->fresh()->is_active);
+        $this->assertTrue(SchoolYear::active()?->is($year) ?? false);
+    }
+
+    public function test_activate_is_idempotent_across_reloads(): void
+    {
+        SchoolYear::factory()->create(['name' => '2025-2026', 'is_active' => true]);
+        $year = SchoolYear::factory()->create(['name' => '2026-2027']);
+
+        $year->activate();
+        SchoolYear::firstOrCreate(['name' => '2026-2027'])->activate();
+
+        $this->assertSame(1, SchoolYear::where('is_active', true)->count());
+        $this->assertTrue(SchoolYear::active()->is($year));
+    }
 }
