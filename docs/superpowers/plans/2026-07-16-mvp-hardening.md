@@ -494,6 +494,12 @@ git commit -m "docs: project README and CLAUDE.md"
 
 ---
 
+## Execution deviations
+
+- `phpunit.xml` gained pinned `APP_URL=http://localhost` / empty `ASSET_URL` (commit c89ffcd): the dev `.env` points APP_URL at a code-server proxy with a path prefix, which made every HTTP test request hit `/proxy/8000/...` and 404 — the whole suite was red before Task 1 was reviewed. Pinning test URLs makes the suite independent of dev-server config.
+- Task 2's locking strategy was revised mid-execution (see revised Step 3) and later refined to a `sole()` read reassigned to `$enrollment` plus `DB::transaction(..., 3)` deadlock retries (final-review follow-up).
+- CSV export for reports already existed in the codebase (commit bdfba82, pre-branch) — the Phase 2/3 export work is narrower than the spec's phrasing implies.
+
 ## Final verification (after all tasks)
 
 - [ ] Run: `vendor/bin/pint --test && vendor/bin/phpstan analyse --no-progress --memory-limit=1G && php artisan test`
