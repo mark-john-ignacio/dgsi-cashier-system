@@ -17,6 +17,11 @@ class PaymentService
         float $amount, string $method, User $receivedBy): Payment
     {
         return DB::transaction(function () use ($enrollment, $orNumber, $paymentDate, $amount, $method, $receivedBy) {
+            // Serialize recording per enrollment. This locking read must be the
+            // transaction's first statement: it does not establish the REPEATABLE READ
+            // snapshot, so every later read sees state committed after the lock is won.
+            Enrollment::whereKey($enrollment->id)->lockForUpdate()->get();
+
             $exists = Payment::where('school_year_id', $enrollment->school_year_id)
                 ->where('or_number', $orNumber)->exists();
             if ($exists) {
