@@ -36,8 +36,15 @@ project infrastructure before a larger UI migration.
 allocations. Two concurrent payments for the same enrollment can both read the same
 totals and over-allocate a charge.
 
-**Fix:** add `->lockForUpdate()` to the charges query inside the existing
-`DB::transaction`, serializing concurrent recordings per enrollment's charge rows.
+**Fix:** acquire `lockForUpdate()` on the **enrollment row as the transaction's
+first statement**, then also lock the charges query. The enrollment-row lock must
+come first: under MySQL/MariaDB REPEATABLE READ, a transaction's first plain
+`SELECT` freezes its snapshot, so a transaction that merely blocked on a later
+charge-row lock would still compute "already paid" sums from a pre-lock snapshot
+and over-allocate. A locking read does not establish the snapshot, so locking the
+enrollment first serializes recordings per enrollment AND guarantees every
+subsequent read sees the prior recording's committed state. (Found in Task 2
+review; supersedes the original charge-row-lock-only design.)
 
 **Problem B:** the duplicate-OR check is `exists()` then insert. The DB already has a
 unique index on `payments (school_year_id, or_number)`, so a race cannot corrupt data,

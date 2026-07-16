@@ -176,7 +176,22 @@ Expected: PASS (this guards the arithmetic the lock protects; it must not break 
 
 - [ ] **Step 3: Add the lock**
 
-In `app/Services/PaymentService.php`, change the charges query in `record()`:
+(REVISED during execution — review found the original charge-row-lock-only
+placement leaves a REPEATABLE READ stale-snapshot race on MySQL; the enrollment
+row must be locked as the transaction's first statement. See the spec's
+"Concurrency-safe payment recording" section for the reasoning.)
+
+In `app/Services/PaymentService.php`, make the first statement inside the
+`DB::transaction` closure in `record()` a locking read on the enrollment row:
+
+```php
+// Serialize recording per enrollment. This locking read must be the
+// transaction's first statement: it does not establish the REPEATABLE READ
+// snapshot, so every later read sees state committed after the lock is won.
+Enrollment::whereKey($enrollment->id)->lockForUpdate()->get();
+```
+
+and change the charges query in `record()`:
 
 ```php
 $charges = $enrollment->ledgerEntries()->active()
