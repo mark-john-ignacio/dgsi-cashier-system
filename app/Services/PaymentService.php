@@ -39,7 +39,7 @@ class PaymentService
 
             $remaining = $amount;
             $charges = $enrollment->ledgerEntries()->active()
-                ->where('type', 'charge')->orderBy('id')->get();
+                ->where('type', 'charge')->orderBy('id')->lockForUpdate()->get();
 
             foreach ($charges as $charge) {
                 if ($remaining <= 0.005) {

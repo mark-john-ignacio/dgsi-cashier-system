@@ -99,4 +99,18 @@ class PaymentTest extends TestCase
         $this->assertEqualsWithDelta(-1500.00, $this->enrollment->fresh()->balance(), 0.001);
         $this->assertEqualsWithDelta(1500.00, $payment->unallocatedAmount(), 0.001);
     }
+
+    public function test_sequential_payments_never_over_allocate_a_charge(): void
+    {
+        $svc = app(PaymentService::class);
+        $svc->record($this->enrollment, 'OR-3001', '2026-08-01', 20000.00, 'cash', $this->cashier);
+        $svc->record($this->enrollment, 'OR-3002', '2026-08-02', 6000.00, 'cash', $this->cashier);
+
+        $tuition = $this->enrollment->ledgerEntries()->where('description', 'Tuition Fee')->first();
+        $books = $this->enrollment->ledgerEntries()->where('description', 'Books')->first();
+
+        // 25,000 tuition is exactly filled across both payments; 1,000 spills to books.
+        $this->assertEqualsWithDelta(25000.00, (float) $tuition->allocations()->sum('amount'), 0.001);
+        $this->assertEqualsWithDelta(1000.00, (float) $books->allocations()->sum('amount'), 0.001);
+    }
 }
