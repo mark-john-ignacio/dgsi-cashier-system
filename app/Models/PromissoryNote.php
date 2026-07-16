@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Database\Factories\PromissoryNoteFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PromissoryNote extends Model
 {
-    /** @use HasFactory<\Database\Factories\PromissoryNoteFactory> */
+    /** @use HasFactory<PromissoryNoteFactory> */
     use HasFactory;
 
     protected $fillable = ['enrollment_id', 'amount', 'due_date', 'notes', 'status', 'created_by'];
@@ -20,7 +22,10 @@ class PromissoryNote extends Model
         return $q->where('status', 'pending');
     }
 
-    public function enrollment()
+    /**
+     * @return BelongsTo<Enrollment, $this>
+     */
+    public function enrollment(): BelongsTo
     {
         return $this->belongsTo(Enrollment::class);
     }

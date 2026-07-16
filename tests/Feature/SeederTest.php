@@ -6,6 +6,7 @@ use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\SchoolYear;
 use App\Models\Student;
+use Database\Seeders\DemoDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +16,7 @@ class SeederTest extends TestCase
 
     public function test_demo_seeder_builds_a_realistic_dataset(): void
     {
-        $this->seed(\Database\Seeders\DemoDataSeeder::class);
+        $this->seed(DemoDataSeeder::class);
 
         $this->assertNotNull(SchoolYear::active());
         $this->assertGreaterThanOrEqual(50, Enrollment::count());
@@ -43,13 +44,13 @@ class SeederTest extends TestCase
 
     public function test_demo_seeder_is_idempotent(): void
     {
-        $this->seed(\Database\Seeders\DemoDataSeeder::class);
+        $this->seed(DemoDataSeeder::class);
 
         $students = Student::count();
         $enrollments = Enrollment::count();
         $payments = Payment::count();
 
-        $this->seed(\Database\Seeders\DemoDataSeeder::class);
+        $this->seed(DemoDataSeeder::class);
 
         $this->assertSame($students, Student::count());
         $this->assertSame($enrollments, Enrollment::count());

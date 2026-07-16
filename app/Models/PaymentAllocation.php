@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PaymentAllocation extends Model
 {
@@ -10,12 +11,18 @@ class PaymentAllocation extends Model
 
     protected $casts = ['amount' => 'decimal:2'];
 
-    public function payment()
+    /**
+     * @return BelongsTo<Payment, $this>
+     */
+    public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
     }
 
-    public function ledgerEntry()
+    /**
+     * @return BelongsTo<LedgerEntry, $this>
+     */
+    public function ledgerEntry(): BelongsTo
     {
         return $this->belongsTo(LedgerEntry::class);
     }

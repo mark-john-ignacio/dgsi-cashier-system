@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 class PaymentService
@@ -16,25 +17,34 @@ class PaymentService
         float $amount, string $method, User $receivedBy): Payment
     {
         return DB::transaction(function () use ($enrollment, $orNumber, $paymentDate, $amount, $method, $receivedBy) {
+            // Serialize recording per enrollment. This locking read must be the
+            // transaction's first statement: it does not establish the REPEATABLE READ
+            // snapshot, so every later read sees state committed after the lock is won.
+            $enrollment = Enrollment::whereKey($enrollment->id)->lockForUpdate()->sole();
+
             $exists = Payment::where('school_year_id', $enrollment->school_year_id)
                 ->where('or_number', $orNumber)->exists();
             if ($exists) {
-                throw new DuplicateOrNumber("OR number {$orNumber} is already used this school year.");
+                throw DuplicateOrNumber::forOrNumber($orNumber);
             }
 
-            $payment = Payment::create([
-                'enrollment_id' => $enrollment->id,
-                'school_year_id' => $enrollment->school_year_id,
-                'or_number' => $orNumber,
-                'payment_date' => $paymentDate,
-                'amount' => $amount,
-                'method' => $method,
-                'received_by' => $receivedBy->id,
-            ]);
+            try {
+                $payment = Payment::create([
+                    'enrollment_id' => $enrollment->id,
+                    'school_year_id' => $enrollment->school_year_id,
+                    'or_number' => $orNumber,
+                    'payment_date' => $paymentDate,
+                    'amount' => $amount,
+                    'method' => $method,
+                    'received_by' => $receivedBy->id,
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                throw DuplicateOrNumber::forOrNumber($orNumber);
+            }
 
             $remaining = $amount;
             $charges = $enrollment->ledgerEntries()->active()
-                ->where('type', 'charge')->orderBy('id')->get();
+                ->where('type', 'charge')->orderBy('id')->lockForUpdate()->get();
 
             foreach ($charges as $charge) {
                 if ($remaining <= 0.005) {
@@ -61,7 +71,7 @@ class PaymentService
             ]);
 
             return $payment;
-        });
+        }, 3);
     }
 
     public function void(Payment $payment, User $by, string $reason): void
@@ -88,6 +98,6 @@ class PaymentService
                 'amount' => (string) $payment->amount,
                 'reason' => trim($reason),
             ]);
-        });
+        }, 3);
     }
 }

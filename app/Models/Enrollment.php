@@ -2,37 +2,67 @@
 
 namespace App\Models;
 
+use Database\Factories\EnrollmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Dynamic aggregate columns attached at runtime via withSum()/manual assignment
+ * in ReportController::unpaidEnrollments() and Livewire\StudentSearch::render().
+ *
+ * @property float|null $assessed_total
+ * @property float|null $paid_total
+ * @property float|null $promised_total
+ * @property float|null $balance_amount
+ * @property float|null $assessed
+ * @property float|null $paid
+ * @property float|null $promised
+ */
 class Enrollment extends Model
 {
-    /** @use HasFactory<\Database\Factories\EnrollmentFactory> */
+    /** @use HasFactory<EnrollmentFactory> */
     use HasFactory;
 
     protected $fillable = ['student_id', 'school_year_id', 'grade_level', 'section'];
 
-    public function student()
+    /**
+     * @return BelongsTo<Student, $this>
+     */
+    public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
-    public function schoolYear()
+    /**
+     * @return BelongsTo<SchoolYear, $this>
+     */
+    public function schoolYear(): BelongsTo
     {
         return $this->belongsTo(SchoolYear::class);
     }
 
-    public function ledgerEntries()
+    /**
+     * @return HasMany<LedgerEntry, $this>
+     */
+    public function ledgerEntries(): HasMany
     {
         return $this->hasMany(LedgerEntry::class);
     }
 
-    public function payments()
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
-    public function promissoryNotes()
+    /**
+     * @return HasMany<PromissoryNote, $this>
+     */
+    public function promissoryNotes(): HasMany
     {
         return $this->hasMany(PromissoryNote::class);
     }

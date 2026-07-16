@@ -21,7 +21,7 @@ class FeeStructureController extends Controller
 
     public function create()
     {
-        return $this->form(new FeeStructure());
+        return $this->form(new FeeStructure);
     }
 
     public function edit(FeeStructure $feeStructure)

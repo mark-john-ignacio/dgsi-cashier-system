@@ -47,7 +47,7 @@ class ReportController extends Controller
     public function unpaid(Request $request)
     {
         $year = SchoolYear::active();
-        abort_unless($year, 404, 'No active school year.');
+        abort_unless($year !== null, 404, 'No active school year.');
 
         $rows = $this->unpaidEnrollments($year, $request->input('grade_level'));
 
@@ -75,7 +75,7 @@ class ReportController extends Controller
     public function batchNotices(Request $request)
     {
         $year = SchoolYear::active();
-        abort_unless($year, 404);
+        abort_unless($year !== null, 404);
 
         $enrollments = $this->unpaidEnrollments($year, $request->input('grade_level'))
             ->map(fn ($e) => $this->loadForNotice($e));

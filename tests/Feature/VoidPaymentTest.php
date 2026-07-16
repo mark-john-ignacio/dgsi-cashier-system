@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Exceptions\VoidNotAllowed;
 use App\Models\FeeStructure;
 use App\Models\FeeType;
+use App\Models\Payment;
 use App\Models\SchoolYear;
 use App\Models\Student;
 use App\Models\User;
@@ -70,7 +71,7 @@ class VoidPaymentTest extends TestCase
         $this->assertTrue($payment->fresh()->isVoided());
         $this->assertDatabaseHas('audit_logs', [
             'action' => 'payment.voided',
-            'subject_type' => \App\Models\Payment::class,
+            'subject_type' => Payment::class,
             'subject_id' => $payment->id,
             'user_id' => $this->admin->id,
         ]);

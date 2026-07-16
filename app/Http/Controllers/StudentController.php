@@ -21,7 +21,7 @@ class StudentController extends Controller
 
     public function create()
     {
-        return view('students.form', ['student' => new Student()]);
+        return view('students.form', ['student' => new Student]);
     }
 
     public function store(Request $request)
@@ -51,7 +51,7 @@ class StudentController extends Controller
         ]);
 
         $year = SchoolYear::active();
-        abort_unless($year, 422, 'No active school year.');
+        abort_unless($year !== null, 422, 'No active school year.');
 
         try {
             $enrollment = $service->register($student, $year, $data['grade_level'], $data['section'] ?? null);

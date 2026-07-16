@@ -2,6 +2,4 @@
 
 namespace App\Exceptions;
 
-class VoidNotAllowed extends \RuntimeException
-{
-}
+class VoidNotAllowed extends \RuntimeException {}
