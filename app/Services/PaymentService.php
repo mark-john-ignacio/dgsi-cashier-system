@@ -20,7 +20,7 @@ class PaymentService
             // Serialize recording per enrollment. This locking read must be the
             // transaction's first statement: it does not establish the REPEATABLE READ
             // snapshot, so every later read sees state committed after the lock is won.
-            Enrollment::whereKey($enrollment->id)->lockForUpdate()->get();
+            $enrollment = Enrollment::whereKey($enrollment->id)->lockForUpdate()->sole();
 
             $exists = Payment::where('school_year_id', $enrollment->school_year_id)
                 ->where('or_number', $orNumber)->exists();
@@ -71,7 +71,7 @@ class PaymentService
             ]);
 
             return $payment;
-        });
+        }, 3);
     }
 
     public function void(Payment $payment, User $by, string $reason): void
@@ -98,6 +98,6 @@ class PaymentService
                 'amount' => (string) $payment->amount,
                 'reason' => trim($reason),
             ]);
-        });
+        }, 3);
     }
 }
