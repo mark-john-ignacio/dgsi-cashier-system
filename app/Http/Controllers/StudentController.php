@@ -51,7 +51,7 @@ class StudentController extends Controller
         ]);
 
         $year = SchoolYear::active();
-        abort_unless($year, 422, 'No active school year.');
+        abort_unless($year !== null, 422, 'No active school year.');
 
         try {
             $enrollment = $service->register($student, $year, $data['grade_level'], $data['section'] ?? null);

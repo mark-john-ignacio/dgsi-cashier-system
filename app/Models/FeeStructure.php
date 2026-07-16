@@ -5,6 +5,8 @@ namespace App\Models;
 use Database\Factories\FeeStructureFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FeeStructure extends Model
 {
@@ -13,12 +15,18 @@ class FeeStructure extends Model
 
     protected $fillable = ['school_year_id', 'grade_level'];
 
-    public function items()
+    /**
+     * @return HasMany<FeeStructureItem, $this>
+     */
+    public function items(): HasMany
     {
         return $this->hasMany(FeeStructureItem::class);
     }
 
-    public function schoolYear()
+    /**
+     * @return BelongsTo<SchoolYear, $this>
+     */
+    public function schoolYear(): BelongsTo
     {
         return $this->belongsTo(SchoolYear::class);
     }

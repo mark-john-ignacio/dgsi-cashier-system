@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LedgerEntry extends Model
 {
@@ -16,17 +18,26 @@ class LedgerEntry extends Model
         return $query->whereNull('voided_at');
     }
 
-    public function enrollment()
+    /**
+     * @return BelongsTo<Enrollment, $this>
+     */
+    public function enrollment(): BelongsTo
     {
         return $this->belongsTo(Enrollment::class);
     }
 
-    public function feeType()
+    /**
+     * @return BelongsTo<FeeType, $this>
+     */
+    public function feeType(): BelongsTo
     {
         return $this->belongsTo(FeeType::class);
     }
 
-    public function allocations()
+    /**
+     * @return HasMany<PaymentAllocation, $this>
+     */
+    public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
     }
