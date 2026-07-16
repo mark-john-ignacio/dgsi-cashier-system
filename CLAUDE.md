@@ -36,7 +36,7 @@ Tailwind). Production DB is MySQL/MariaDB; tests use sqlite `:memory:`.
 - Money is `decimal(12,2)` in the DB, floats in PHP with 0.005 epsilons —
   do not "fix" this piecemeal; it's a deliberate, tracked trade-off.
 - Ledger amounts: positive = charge, negative = discount/adjustment.
-- `AuditLog::record()` on every money mutation.
+- `AuditLog::record()` on payment record/void today — extend it to any new money-mutating path you add (registration charges are currently not audited).
 
 ## Roadmap context
 
