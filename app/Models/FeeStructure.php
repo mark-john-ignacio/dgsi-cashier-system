@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\FeeStructureFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class FeeStructure extends Model
 {
-    /** @use HasFactory<\Database\Factories\FeeStructureFactory> */
+    /** @use HasFactory<FeeStructureFactory> */
     use HasFactory;
 
     protected $fillable = ['school_year_id', 'grade_level'];

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\EnrollmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Enrollment extends Model
 {
-    /** @use HasFactory<\Database\Factories\EnrollmentFactory> */
+    /** @use HasFactory<EnrollmentFactory> */
     use HasFactory;
 
     protected $fillable = ['student_id', 'school_year_id', 'grade_level', 'section'];

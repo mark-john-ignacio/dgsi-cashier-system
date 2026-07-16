@@ -48,7 +48,7 @@ class PaymentTest extends TestCase
     {
         app(PaymentService::class)->record($this->enrollment, 'OR-1001', '2026-08-01', 26000.00, 'cash', $this->cashier);
 
-        $payment = \App\Models\Payment::first();
+        $payment = Payment::first();
         $this->assertCount(2, $payment->allocations); // 25000 tuition + 1000 books
         $this->assertEqualsWithDelta(2500.00, $this->enrollment->fresh()->balance(), 0.001);
     }

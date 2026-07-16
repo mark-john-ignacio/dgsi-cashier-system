@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\FeeStructure;
 use App\Models\FeeType;
 use App\Models\SchoolYear;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -30,7 +31,7 @@ class FeeStructureTest extends TestCase
         $year = SchoolYear::factory()->create();
         FeeStructure::create(['school_year_id' => $year->id, 'grade_level' => 'Grade 3']);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         FeeStructure::create(['school_year_id' => $year->id, 'grade_level' => 'Grade 3']);
     }
 }

@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\PromissoryNoteFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PromissoryNote extends Model
 {
-    /** @use HasFactory<\Database\Factories\PromissoryNoteFactory> */
+    /** @use HasFactory<PromissoryNoteFactory> */
     use HasFactory;
 
     protected $fillable = ['enrollment_id', 'amount', 'due_date', 'notes', 'status', 'created_by'];

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Student;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,7 +25,7 @@ class StudentEnrollmentTest extends TestCase
         $student = Student::factory()->create();
         Enrollment::create(['student_id' => $student->id, 'school_year_id' => $year->id, 'grade_level' => 'Grade 3']);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         Enrollment::create(['student_id' => $student->id, 'school_year_id' => $year->id, 'grade_level' => 'Grade 4']);
     }
 }
