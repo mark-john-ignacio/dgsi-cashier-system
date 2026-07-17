@@ -8,6 +8,8 @@
 
 **Tech Stack:** Laravel 12, PHP 8.3, Filament ^4.0 (Livewire 3), Tailwind v4 via `@tailwindcss/vite`, PHPUnit 11 (sqlite `:memory:`), Pint, Larastan 3.
 
+**Version strategy (decided 2026-07-17):** Filament v5 exists (v5.0.0 released 2026-01-16, current v5.6.x) but requires Livewire 4 + Tailwind 4. Tasks 1–14 build on **v4** so the Breeze/Livewire-3 UI keeps working until cutover and the plan's v4 code stays valid. **Task 15** then upgrades to v5 with the official upgrade script, after the old UI is gone. Task 15 is severable: if the upgrade misbehaves, merge on v4 and backlog it.
+
 ## Global Constraints
 
 - Branch: `feat/filament-rewrite` (already checked out; Phase 2 spec committed).
@@ -655,6 +657,29 @@ php artisan route:list   # confirm no orphan routes referencing deleted controll
 Expected: everything green; route list contains only `/`, `print/*`, Filament `app/*`, livewire internals.
 - [ ] **Step 4: Update deploy docs** — `docs/deploy.md`: add `php artisan filament:optimize` (or the v4 equivalent caching commands shown by `php artisan list filament`) to the Docker/Coolify build steps; confirm the Dockerfile asset stage still builds (Tailwind v4). Update `CLAUDE.md` architecture section: Filament panel replaces "Cashier flow is Livewire; admin CRUD is classic controllers; auth is Breeze" and the roadmap line (Phase 2 done, Phase 3 next).
 - [ ] **Step 5: Commit** — `git add -A -- ':!.superpowers' && git commit -m "feat!: cut over to Filament panel, remove Breeze UI"`
+
+---
+
+### Task 15: Upgrade to Filament v5 (Livewire 4) — severable
+
+**Why after Task 14:** Filament v5 requires Livewire 4 and Tailwind 4. Doing the bump only after cutover means the Livewire major upgrade never coexists with the deleted Breeze/Livewire-3 UI, and it lands on a fresh, plugin-free, fully-tested Filament codebase — the cheapest moment to upgrade.
+
+**Files:** `composer.json`/`composer.lock`, `package.json`/lockfile, plus whatever the official upgrade script rewrites under `app/Filament/**`, `app/Providers/Filament/**`, `resources/`.
+
+- [ ] **Step 1: Read the upgrade guide** at `https://filamentphp.com/docs/5.x/upgrade-guide` (fetch it — this is post-knowledge-cutoff material; do not work from memory). Note the exact composer commands and the automated upgrade script it prescribes.
+- [ ] **Step 2: Run the automated upgrade** exactly as the guide directs (upgrade script, then `composer require` bumps for `filament/filament:"^5.0"` and `livewire/livewire:"^4.0"`, then any `php artisan filament:upgrade`-style commands it prints). Review every change the script makes; apply the manual adjustments the guide lists.
+- [ ] **Step 3: Full verification**
+
+```bash
+php artisan test
+vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+vendor/bin/pint --test
+npm run build
+```
+
+- [ ] **Step 4: Manual smoke** via `composer dev`: login, record a payment (duplicate-OR + overpay paths), void, print slip, dashboard, both report pages + CSV.
+- [ ] **Step 5: Commit** `feat: upgrade to Filament v5 (Livewire 4)`.
+- [ ] **Bail-out (allowed, not a failure):** if after honest effort the upgrade breaks tests or the smoke flow in ways that need design decisions, `git reset --hard` back to the Task 14 commit, record the findings in the progress ledger and this plan's deviations section, and merge Phase 2 on v4 — the upgrade becomes its own future task.
 
 ---
 

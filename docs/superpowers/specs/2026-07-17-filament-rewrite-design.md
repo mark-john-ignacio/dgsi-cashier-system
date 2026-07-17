@@ -28,6 +28,11 @@ the only owners of money logic.
 
 - `composer require filament/filament:"^4.0"`; one panel provider (`app/Providers/
   Filament/AppPanelProvider.php`), path `/app`, using Filament's login page.
+- **Version strategy (added 2026-07-17):** Filament v5 (released 2026-01-16) requires
+  Livewire 4 + Tailwind 4, so the rewrite builds on v4 (keeps the Livewire 3 Breeze UI
+  alive until cutover), then upgrades to v5 via the official upgrade script as a final,
+  severable task after the old UI is deleted. If the upgrade misbehaves, Phase 2 merges
+  on v4 and the upgrade is backlogged.
 - `User::canAccessPanel()` returns true for roles `admin` and `cashier`.
 - Tailwind resolves to v4 using the `@tailwindcss/vite` plugin already present in
   package.json; the stray `tailwindcss ^3.x` dependency and `tailwind.config.js` are
