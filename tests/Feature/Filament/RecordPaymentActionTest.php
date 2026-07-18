@@ -83,6 +83,19 @@ class RecordPaymentActionTest extends TestCase
         $this->assertEqualsWithDelta(1500.0, Payment::first()->unallocatedAmount(), 0.001);
     }
 
+    public function test_unknown_method_rejected_server_side(): void
+    {
+        Livewire::actingAs($this->cashier)
+            ->test(StudentLedger::class, ['enrollment' => $this->enrollment->id])
+            ->callAction('recordPayment', [
+                'or_number' => 'OR-9004', 'payment_date' => now()->toDateString(),
+                'amount' => 100, 'method' => 'bitcoin',
+            ])
+            ->assertHasActionErrors(['method']);
+
+        $this->assertSame(0, Payment::count());
+    }
+
     public function test_future_payment_date_rejected(): void
     {
         Livewire::actingAs($this->cashier)

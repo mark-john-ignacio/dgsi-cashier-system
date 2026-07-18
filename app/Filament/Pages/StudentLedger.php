@@ -55,7 +55,7 @@ class StudentLedger extends Page
                     DatePicker::make('payment_date')->default(now())->required()->maxDate(now()),
                     TextInput::make('amount')->numeric()->required()->minValue(0.01),
                     Select::make('method')->options(['cash' => 'Cash', 'gcash' => 'GCash', 'bank' => 'Bank'])
-                        ->default('cash')->required(),
+                        ->default('cash')->required()->rule('in:cash,gcash,bank'),
                     Checkbox::make('confirm_overpay')->label('Record excess as advance/credit'),
                 ])
                 ->action(function (array $data) {
