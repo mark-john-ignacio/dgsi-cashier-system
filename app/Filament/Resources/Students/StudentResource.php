@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Students;
 
+use App\Filament\Pages\StudentLedger;
 use App\Filament\Resources\Students\Pages\CreateStudent;
 use App\Filament\Resources\Students\Pages\EditStudent;
 use App\Filament\Resources\Students\Pages\ListStudents;
@@ -48,15 +49,10 @@ class StudentResource extends Resource
     }
 
     /**
-     * Single source of the StudentLedger page URL. Task 8 introduces
-     * `App\Filament\Pages\StudentLedger` at slug `ledger/{enrollment}` (see
-     * docs/superpowers/specs/2026-07-17-filament-rewrite-design.md); once that
-     * class exists this should delegate to
-     * `StudentLedger::getUrl(['enrollment' => $enrollment->id])` instead of
-     * building the path by hand.
+     * Single source of the StudentLedger page URL.
      */
     public static function ledgerUrl(Enrollment $enrollment): string
     {
-        return '/app/ledger/'.$enrollment->id;
+        return StudentLedger::getUrl(['enrollment' => $enrollment->id]);
     }
 }
