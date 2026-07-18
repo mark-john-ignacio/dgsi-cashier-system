@@ -24,6 +24,7 @@ class SchoolYearsTable
             ->recordActions([
                 Action::make('activate')
                     ->requiresConfirmation()
+                    ->disabled(fn (SchoolYear $record) => $record->is_active)
                     ->action(fn (SchoolYear $record) => $record->activate()),
                 EditAction::make(),
             ])
