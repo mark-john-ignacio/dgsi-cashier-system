@@ -86,4 +86,17 @@ class Enrollment extends Model
     {
         return round($this->totalAssessed() - $this->totalPaid(), 2);
     }
+
+    /**
+     * Non-voided payments total minus what has been allocated to charges;
+     * the unallocated remainder is credit held for future charges.
+     */
+    public function advanceCredit(): float
+    {
+        $allocated = (float) PaymentAllocation::query()
+            ->whereHas('payment', fn ($q) => $q->where('enrollment_id', $this->id)->whereNull('voided_at'))
+            ->sum('amount');
+
+        return round(max($this->totalPaid() - $allocated, 0), 2);
+    }
 }

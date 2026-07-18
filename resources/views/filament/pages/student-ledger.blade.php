@@ -9,10 +9,10 @@
                                 <td class="py-1">{{ $entry->description }}</td>
                                 <td class="text-right">₱{{ number_format($entry->amount, 2) }}</td>
                                 <td class="text-right text-gray-500">
-                                    Paid ₱{{ number_format($entry->allocations->sum('amount'), 2) }}
+                                    Paid ₱{{ number_format($entry->paidAmount(), 2) }}
                                 </td>
                                 <td class="text-right text-gray-500">
-                                    Unpaid ₱{{ number_format(max($entry->amount - $entry->allocations->sum('amount'), 0), 2) }}
+                                    Unpaid ₱{{ number_format($entry->unpaidAmount(), 2) }}
                                 </td>
                             </tr>
                         @endforeach
@@ -84,13 +84,9 @@
                 <div class="text-3xl font-bold {{ $enrollment->balance() > 0.005 ? 'text-danger-600' : 'text-success-600' }}">
                     ₱{{ number_format($enrollment->balance(), 2) }}
                 </div>
-                @php
-                    $allocatedTotal = $enrollment->ledgerEntries->flatMap->allocations->sum('amount');
-                    $advanceCredit = max($enrollment->totalPaid() - $allocatedTotal, 0);
-                @endphp
-                @if ($advanceCredit > 0.005)
+                @if ($enrollment->advanceCredit() > 0.005)
                     <div class="mt-2 text-sm text-gray-500">
-                        Advance credit: ₱{{ number_format($advanceCredit, 2) }}
+                        Advance credit: ₱{{ number_format($enrollment->advanceCredit(), 2) }}
                     </div>
                 @endif
                 <div class="mt-3 text-sm space-x-2">

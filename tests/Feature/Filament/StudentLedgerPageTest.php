@@ -62,6 +62,24 @@ class StudentLedgerPageTest extends TestCase
             ->assertSee(number_format($this->enrollment->fresh()->balance(), 2));
     }
 
+    public function test_overpayment_shows_advance_credit(): void
+    {
+        // 30000 against 28500 assessed leaves 1500 unallocated advance credit.
+        app(PaymentService::class)->record(
+            $this->enrollment, 'OR-1001', '2026-08-01', 30000.00, 'cash', $this->cashier);
+
+        $this->actingAs(User::factory()->create(['role' => 'cashier']));
+
+        Livewire::test(StudentLedger::class, ['enrollment' => $this->enrollment->id])
+            ->assertSee('Advance credit')
+            ->assertSee('1,500.00');
+
+        $enrollment = $this->enrollment->fresh();
+        $this->assertEqualsWithDelta(1500.00, $enrollment->advanceCredit(), 0.001);
+        // Cold (non-eager-loaded) paidAmount path: tuition charge fully paid.
+        $this->assertEqualsWithDelta(25000.00, $enrollment->ledgerEntries()->orderBy('id')->first()->paidAmount(), 0.001);
+    }
+
     public function test_missing_enrollment_returns_404(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'cashier']));
