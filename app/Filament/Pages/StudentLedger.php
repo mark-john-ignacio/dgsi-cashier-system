@@ -110,8 +110,9 @@ class StudentLedger extends Page
                 ->label('Add Promissory Note')
                 ->form([
                     TextInput::make('amount')->numeric()->required()->minValue(0.01),
-                    DatePicker::make('due_date')->required(),
-                    Textarea::make('notes'),
+                    DatePicker::make('due_date')->required()->rule('after:today')
+                        ->minDate(now()->addDay()),
+                    Textarea::make('notes')->maxLength(500),
                 ])
                 ->action(function (array $data) {
                     $this->enrollment->promissoryNotes()->create([

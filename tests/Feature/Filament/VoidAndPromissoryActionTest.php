@@ -105,6 +105,21 @@ class VoidAndPromissoryActionTest extends TestCase
         $this->assertSame($this->cashier->id, $note->created_by);
     }
 
+    public function test_promissory_note_rejects_due_date_not_after_today(): void
+    {
+        foreach ([now()->toDateString(), now()->subDay()->toDateString()] as $dueDate) {
+            Livewire::actingAs($this->cashier)
+                ->test(StudentLedger::class, ['enrollment' => $this->enrollment->id])
+                ->callAction('addPromissory', [
+                    'amount' => 1000,
+                    'due_date' => $dueDate,
+                ])
+                ->assertHasActionErrors(['due_date']);
+        }
+
+        $this->assertSame(0, PromissoryNote::count());
+    }
+
     public function test_promissory_status_update_pending_to_fulfilled(): void
     {
         $note = PromissoryNote::factory()->create([
