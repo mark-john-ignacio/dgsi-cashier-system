@@ -36,6 +36,7 @@
                             <th>Received By</th>
                             <th class="text-right">Amount</th>
                             <th class="text-right">Status</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,9 +54,17 @@
                                         <a href="{{ route('slips.show', $payment) }}" target="_blank" class="text-primary-600 underline text-xs">Slip</a>
                                     @endif
                                 </td>
+                                <td class="text-right">
+                                    @if (! $payment->isVoided() && auth()->user()->can('void', $payment))
+                                        <button type="button" class="text-danger-600 underline text-xs"
+                                                wire:click="mountAction('void', { payment: {{ $payment->id }} })">
+                                            Void
+                                        </button>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="py-2 text-gray-500">No payments yet.</td></tr>
+                            <tr><td colspan="7" class="py-2 text-gray-500">No payments yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -71,6 +80,14 @@
                                     <td>{{ $note->notes }}</td>
                                     <td class="uppercase text-xs">{{ $note->status }}</td>
                                     <td class="text-right">₱{{ number_format($note->amount, 2) }}</td>
+                                    <td class="text-right">
+                                        @if ($note->status === 'pending')
+                                            <button type="button" class="text-primary-600 underline text-xs"
+                                                    wire:click="mountAction('promissoryStatus', { note: {{ $note->id }} })">
+                                                Update Status
+                                            </button>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

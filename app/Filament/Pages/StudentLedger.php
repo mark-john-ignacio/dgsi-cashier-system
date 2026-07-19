@@ -3,12 +3,16 @@
 namespace App\Filament\Pages;
 
 use App\Exceptions\DuplicateOrNumber;
+use App\Exceptions\VoidNotAllowed;
 use App\Models\Enrollment;
+use App\Models\Payment;
+use App\Models\PromissoryNote;
 use App\Services\PaymentService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -28,7 +32,14 @@ class StudentLedger extends Page
 
     public function mount(int|string $enrollment): void
     {
-        $this->enrollment = Enrollment::with([
+        $this->enrollment = $this->loadEnrollment($enrollment);
+    }
+
+    protected function loadEnrollment(Enrollment|int|string $enrollment): Enrollment
+    {
+        $key = $enrollment instanceof Enrollment ? $enrollment->getKey() : $enrollment;
+
+        return Enrollment::with([
             'student',
             'schoolYear',
             'ledgerEntries.feeType',
@@ -37,7 +48,12 @@ class StudentLedger extends Page
             'payments' => fn ($q) => $q->orderBy('payment_date')->orderBy('id'),
             'payments.receivedBy',
             'promissoryNotes',
-        ])->findOrFail($enrollment);
+        ])->findOrFail($key);
+    }
+
+    protected function refreshEnrollment(): void
+    {
+        $this->enrollment = $this->loadEnrollment($this->enrollment);
     }
 
     public function getTitle(): string
@@ -90,6 +106,67 @@ class StudentLedger extends Page
 
                     $this->redirect(route('slips.show', $payment));
                 }),
+            Action::make('addPromissory')
+                ->label('Add Promissory Note')
+                ->form([
+                    TextInput::make('amount')->numeric()->required()->minValue(0.01),
+                    DatePicker::make('due_date')->required(),
+                    Textarea::make('notes'),
+                ])
+                ->action(function (array $data) {
+                    $this->enrollment->promissoryNotes()->create([
+                        'amount' => $data['amount'],
+                        'due_date' => $data['due_date'],
+                        'notes' => $data['notes'] ?? null,
+                        'created_by' => auth()->id(),
+                    ]);
+
+                    $this->refreshEnrollment();
+
+                    Notification::make()->success()->title('Promissory note added.')->send();
+                }),
         ];
+    }
+
+    public function voidAction(): Action
+    {
+        return Action::make('void')
+            ->label('Void')
+            ->color('danger')
+            ->record(fn (array $arguments) => Payment::findOrFail($arguments['payment']))
+            ->authorize(fn (Payment $record) => auth()->user()->can('void', $record))
+            ->form([
+                Textarea::make('reason')->required(),
+            ])
+            ->action(function (array $data, Payment $record) {
+                try {
+                    app(PaymentService::class)->void($record, auth()->user(), $data['reason']);
+                } catch (VoidNotAllowed $e) {
+                    Notification::make()->danger()->title($e->getMessage())->send();
+
+                    return;
+                }
+
+                $this->refreshEnrollment();
+
+                Notification::make()->success()->title('Payment voided.')->send();
+            });
+    }
+
+    public function promissoryStatusAction(): Action
+    {
+        return Action::make('promissoryStatus')
+            ->label('Update Status')
+            ->record(fn (array $arguments) => PromissoryNote::findOrFail($arguments['note']))
+            ->form([
+                Select::make('status')->options(['fulfilled' => 'Fulfilled', 'broken' => 'Broken'])->required(),
+            ])
+            ->action(function (array $data, PromissoryNote $record) {
+                $record->update(['status' => $data['status']]);
+
+                $this->refreshEnrollment();
+
+                Notification::make()->success()->title('Promissory note marked '.$data['status'].'.')->send();
+            });
     }
 }
