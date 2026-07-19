@@ -15,16 +15,12 @@ class TodayCollectionsStats extends StatsOverviewWidget
         $todayTotal = (float) (clone $today)->sum('amount');
         $todayCount = (clone $today)->count();
 
-        // Get per-method breakdown
-        /** @var object{method: string, total: float}[] $breakdown */
-        $breakdown = (clone $today)
+        // Per-method breakdown, e.g. "cash 1,000.00, gcash 500.00"
+        $methodBreakdown = (clone $today)
             ->selectRaw('method, SUM(amount) as total')
             ->groupBy('method')
-            ->get()
-            ->toArray();
-
-        $methodBreakdown = collect($breakdown)
-            ->mapWithKeys(fn ($row) => [$row['method'] => number_format((float) $row['total'], 2)])
+            ->pluck('total', 'method')
+            ->map(fn ($total, $method) => $method.' '.number_format((float) $total, 2))
             ->implode(', ');
 
         return [

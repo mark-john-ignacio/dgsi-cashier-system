@@ -16,6 +16,7 @@ class LatestPayments extends TableWidget
             ->query(fn (): Builder => Payment::active()
                 ->whereDate('payment_date', today())
                 ->orderByDesc('created_at')
+                ->orderByDesc('id')
                 ->limit(10)
             )
             ->columns([
@@ -35,18 +36,6 @@ class LatestPayments extends TableWidget
                 TextColumn::make('receivedBy.name')
                     ->label('Received By')
                     ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->headerActions([
-                //
-            ])
-            ->recordActions([
-                //
-            ])
-            ->toolbarActions([
-                //
             ])
             ->paginated(false);
     }
