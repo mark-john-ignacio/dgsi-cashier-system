@@ -29,6 +29,16 @@ class DailyCollections extends Page
 
     public ?string $date = null;
 
+    /**
+     * Per-render memo of the payments query. Keyed by the date it was built
+     * for, so a `$date` change transparently invalidates it.
+     *
+     * @var Collection<int, Payment>|null
+     */
+    protected ?Collection $paymentsCache = null;
+
+    protected ?string $paymentsCacheDate = null;
+
     public function mount(): void
     {
         $this->date ??= now()->toDateString();
@@ -39,10 +49,15 @@ class DailyCollections extends Page
      */
     protected function payments(): Collection
     {
-        return Payment::with(['enrollment.student', 'receivedBy'])
-            ->whereDate('payment_date', $this->date)
-            ->orderBy('or_number')
-            ->get();
+        if ($this->paymentsCache === null || $this->paymentsCacheDate !== $this->date) {
+            $this->paymentsCache = Payment::with(['enrollment.student', 'receivedBy'])
+                ->whereDate('payment_date', $this->date)
+                ->orderBy('or_number')
+                ->get();
+            $this->paymentsCacheDate = $this->date;
+        }
+
+        return $this->paymentsCache;
     }
 
     /**
