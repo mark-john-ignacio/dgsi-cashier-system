@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeeStructureController;
 use App\Http\Controllers\FeeTypeController;
+use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolYearController;
@@ -24,6 +25,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/promissory/{promissoryNote}/status', [StudentLedgerController::class, 'updatePromissoryStatus'])->name('promissory.status');
     Route::post('/payments/{payment}/void', [StudentLedgerController::class, 'voidPayment'])->name('payments.void');
     Route::get('/slips/{payment}', [SlipController::class, 'show'])->name('slips.show');
+
+    Route::prefix('print')->name('print.')->group(function () {
+        Route::get('/slip/{payment}', [PrintController::class, 'slip'])->name('slip');
+        Route::get('/notice/{enrollment}', [PrintController::class, 'notice'])->name('notice');
+        Route::get('/statement/{enrollment}', [PrintController::class, 'statement'])->name('statement');
+        Route::get('/notices', [PrintController::class, 'batchNotices'])->name('notices.batch');
+    });
 
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
