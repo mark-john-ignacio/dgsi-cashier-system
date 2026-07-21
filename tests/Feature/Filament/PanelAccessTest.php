@@ -3,6 +3,7 @@
 namespace Tests\Feature\Filament;
 
 use App\Models\User;
+use Filament\Auth\Pages\EditProfile;
 use Filament\Auth\Pages\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -63,5 +64,27 @@ class PanelAccessTest extends TestCase
             ->assertRedirect();
 
         $this->assertGuest();
+    }
+
+    public function test_cashier_can_open_own_profile_page(): void
+    {
+        $cashier = User::factory()->create(['role' => 'cashier']);
+
+        $this->actingAs($cashier)
+            ->get(route('filament.app.auth.profile'))
+            ->assertOk();
+    }
+
+    public function test_cashier_can_update_own_name_via_profile_page(): void
+    {
+        $cashier = User::factory()->create(['role' => 'cashier', 'name' => 'Old Name']);
+
+        Livewire::actingAs($cashier)
+            ->test(EditProfile::class)
+            ->fillForm(['name' => 'New Name'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('New Name', $cashier->fresh()->name);
     }
 }
