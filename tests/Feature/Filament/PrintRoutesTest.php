@@ -101,9 +101,11 @@ class PrintRoutesTest extends TestCase
 
     public function test_all_print_routes_redirect_guests_to_login(): void
     {
-        $this->get(route('print.slip', $this->payment))->assertRedirect(route('login'));
-        $this->get(route('print.notice', $this->enrollment))->assertRedirect(route('login'));
-        $this->get(route('print.statement', $this->enrollment))->assertRedirect(route('login'));
-        $this->get(route('print.notices.batch'))->assertRedirect(route('login'));
+        $login = route('filament.app.auth.login');
+
+        $this->get(route('print.slip', $this->payment))->assertRedirect($login);
+        $this->get(route('print.notice', $this->enrollment))->assertRedirect($login);
+        $this->get(route('print.statement', $this->enrollment))->assertRedirect($login);
+        $this->get(route('print.notices.batch'))->assertRedirect($login);
     }
 }

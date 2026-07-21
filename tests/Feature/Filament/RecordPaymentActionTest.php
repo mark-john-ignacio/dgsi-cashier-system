@@ -41,7 +41,7 @@ class RecordPaymentActionTest extends TestCase
                 'or_number' => 'OR-9001', 'payment_date' => now()->toDateString(),
                 'amount' => 5000, 'method' => 'cash',
             ])->assertHasNoActionErrors()
-            ->assertRedirect(route('slips.show', Payment::first()));
+            ->assertRedirect(route('print.slip', Payment::first()));
 
         $this->assertEqualsWithDelta(23500.0, $this->enrollment->fresh()->balance(), 0.001);
     }

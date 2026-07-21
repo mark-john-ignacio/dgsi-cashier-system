@@ -15,10 +15,13 @@
    - SESSION_DRIVER=database, CACHE_STORE=database, QUEUE_CONNECTION=sync
    - LOG_CHANNEL=stderr (so `docker logs` shows application errors)
 6. Post-deployment command (Coolify app settings). **Production:**
-   `php artisan migrate --force && php artisan db:seed --force && php artisan config:cache && php artisan route:cache`
+   `php artisan migrate --force && php artisan db:seed --force && php artisan config:cache && php artisan route:cache && php artisan filament:optimize`
 
    `db:seed` runs `DatabaseSeeder` — the admin user and base fee types only. It is idempotent.
-   Never point production at `DemoDataSeeder`.
+   Never point production at `DemoDataSeeder`. `filament:optimize` caches Filament's
+   components and Blade icons for performance (the panel is the entire app UI post-Phase-2
+   cutover) — re-run it on every deploy alongside `route:cache`; skipping it after changing
+   a Filament resource/page/widget leaves the panel serving stale cached components.
 7. Attach your domain; Coolify provisions HTTPS automatically.
 8. **Backups (non-negotiable):** in the Coolify MySQL resource, enable Scheduled Backups
    (daily, keep 14). Also schedule an off-VM copy (e.g. S3-compatible storage in Coolify's
@@ -43,7 +46,7 @@ tracking branch `feat/cashier-mvp-implementation`.
 Its post-deployment command seeds demo data and is safe to re-run:
 
 ```
-php artisan migrate --force && php artisan db:seed --class=DemoDataSeeder --force
+php artisan migrate --force && php artisan db:seed --class=DemoDataSeeder --force && php artisan filament:optimize
 ```
 
 `DemoDataSeeder` is idempotent — once students exist it returns without touching them, so a

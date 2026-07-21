@@ -51,7 +51,7 @@
                                     @if ($payment->isVoided())
                                         <span class="text-xs">Voided: {{ $payment->void_reason }}</span>
                                     @else
-                                        <a href="{{ route('slips.show', $payment) }}" target="_blank" class="text-primary-600 underline text-xs">Slip</a>
+                                        <a href="{{ route('print.slip', $payment) }}" target="_blank" class="text-primary-600 underline text-xs">Slip</a>
                                     @endif
                                 </td>
                                 <td class="text-right">
@@ -108,9 +108,9 @@
                 @endif
                 <div class="mt-3 text-sm space-x-2">
                     <a class="text-primary-600 underline" target="_blank"
-                       href="{{ route('reports.statement', $enrollment) }}">Statement</a>
+                       href="{{ route('print.statement', $enrollment) }}">Statement</a>
                     <a class="text-primary-600 underline" target="_blank"
-                       href="{{ route('reports.notice', $enrollment) }}">Notice</a>
+                       href="{{ route('print.notice', $enrollment) }}">Notice</a>
                 </div>
             </x-filament::section>
         </div>

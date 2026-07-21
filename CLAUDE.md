@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 School cashier system on the TALL stack (Laravel 12, Livewire 3, Alpine,
-Tailwind). Production DB is MySQL/MariaDB; tests use sqlite `:memory:`.
+Tailwind), with Filament v4 as the entire application UI. Production DB is
+MySQL/MariaDB; tests use sqlite `:memory:`.
 
 ## Commands
 
@@ -16,12 +17,25 @@ Tailwind). Production DB is MySQL/MariaDB; tests use sqlite `:memory:`.
 - **Money logic lives in services**: `app/Services/PaymentService.php`
   (record/void payments, oldest-first allocation) and
   `app/Services/RegistrationService.php` (enroll + copy fee structure to
-  ledger charges). Controllers and Livewire components must call these, never
+  ledger charges). Filament resources/pages/actions must call these, never
   duplicate the logic.
-- Cashier flow is Livewire (`app/Livewire/`); admin CRUD is classic
-  controllers; auth is Breeze. Role gate: `EnsureRole` middleware
-  (`role:admin`), roles are `admin` and `cashier` on `users.role`.
-- Printables (slips, notices, statements) are plain Blade print views.
+- The entire UI is the Filament v4 panel (`app/Providers/Filament/AppPanelProvider.php`,
+  id `app`, path `/app`) — this replaced Breeze and the classic
+  controllers/Livewire/Blade UI at the Phase 2 cutover. Resources live in
+  `app/Filament/Resources/**` (SchoolYear, FeeType, FeeStructure, User,
+  Student); the cashier ledger workflow is the `StudentLedger` custom page
+  in `app/Filament/Pages/**` with Record Payment / Void / promissory
+  actions; reports are the `DailyCollections` and `UnpaidBalances` pages.
+  Role gate is via Policies (`app/Policies/**`), not middleware — roles are
+  `admin` and `cashier` on `users.role`, checked through `User::isAdmin()`
+  and `FilamentUser::canAccessPanel()`. There is no self-service
+  password-reset or profile-edit page (Filament's `passwordReset()`/
+  `profile()` are not enabled on the panel); an admin resets/edits any
+  user via the Users resource.
+- Printables (slips, notices, statements) are plain Blade print views,
+  served by `PrintController` (`app/Http/Controllers/PrintController.php`)
+  under the `print.*` routes — the only non-Filament, non-`/` routes left
+  in `routes/web.php`.
 
 ## Domain invariants
 
@@ -40,7 +54,9 @@ Tailwind). Production DB is MySQL/MariaDB; tests use sqlite `:memory:`.
 
 ## Roadmap context
 
-Phase 2 (Filament v4 big-bang rewrite of the whole UI) and Phase 3 (OR-number
-assistance, discounts UI, installment plans) are specced in
-`docs/superpowers/specs/2026-07-16-mvp-hardening-design.md`. Don't invest in
-Breeze views — they are scheduled for deletion at the Phase 2 cutover.
+Phase 2 (Filament v4 big-bang rewrite of the whole UI) is done — Breeze and
+the classic controllers/Livewire/Blade UI were deleted at cutover. Phase 3
+(OR-number assistance, discounts UI, installment plans) is next; it's
+specced in `docs/superpowers/specs/2026-07-16-mvp-hardening-design.md`.
+Build all new UI in the Filament panel (`app/Filament/**`) — there is no
+Breeze UI left to extend.

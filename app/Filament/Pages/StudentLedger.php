@@ -104,7 +104,7 @@ class StudentLedger extends Page
                         ]);
                     }
 
-                    $this->redirect(route('slips.show', $payment));
+                    $this->redirect(route('print.slip', $payment));
                 }),
             Action::make('addPromissory')
                 ->label('Add Promissory Note')
