@@ -71,6 +71,34 @@ class PrintRoutesTest extends TestCase
             ->assertSee('Testable, Print');
     }
 
+    /**
+     * Ported from the deleted tests/Feature/ReportsTest.php
+     * (test_batch_notices_render_one_page_per_unpaid_student) — the existing
+     * batch-notices route test only had one, already-unpaid enrollment and
+     * never proved that fully-paid students or other grade levels are
+     * excluded.
+     */
+    public function test_batch_notices_excludes_paid_students_and_respects_grade_filter(): void
+    {
+        $year = SchoolYear::active();
+
+        $paidStudent = Student::factory()->create(['first_name' => 'Fully', 'last_name' => 'Paid']);
+        $paidEnrollment = app(RegistrationService::class)->register($paidStudent, $year, 'Grade 3');
+        app(PaymentService::class)->record($paidEnrollment, 'OR-5002', now()->toDateString(), 10000.00, 'cash', $this->cashier);
+
+        $structure4 = FeeStructure::create(['school_year_id' => $year->id, 'grade_level' => 'Grade 4']);
+        $structure4->items()->create(['fee_type_id' => FeeType::create(['name' => 'Misc Fee'])->id, 'amount' => 5000]);
+        $grade4Student = Student::factory()->create(['first_name' => 'Four', 'last_name' => 'Grader']);
+        app(RegistrationService::class)->register($grade4Student, $year, 'Grade 4');
+
+        $this->actingAs($this->cashier)
+            ->get(route('print.notices.batch', ['grade_level' => 'Grade 3']))
+            ->assertOk()
+            ->assertSee('Testable, Print')
+            ->assertDontSee('Paid, Fully')
+            ->assertDontSee('Grader, Four');
+    }
+
     public function test_all_print_routes_redirect_guests_to_login(): void
     {
         $this->get(route('print.slip', $this->payment))->assertRedirect(route('login'));

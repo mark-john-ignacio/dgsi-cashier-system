@@ -39,6 +39,23 @@ class StudentResourceTest extends TestCase
             ->assertCanNotSeeTableRecords([$other]);
     }
 
+    /**
+     * Ported from the deleted tests/Feature/StudentSearchTest.php — the old
+     * StudentSearch Livewire component searched by name; the Filament table
+     * search only had student_no coverage before this port.
+     */
+    public function test_search_by_last_name_finds_the_record(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'cashier']));
+        $match = Student::factory()->create(['first_name' => 'Jose', 'last_name' => 'Reyes']);
+        $other = Student::factory()->create(['first_name' => 'Maria', 'last_name' => 'Santos']);
+
+        Livewire::test(ListStudents::class)
+            ->searchTable('Reyes')
+            ->assertCanSeeTableRecords([$match])
+            ->assertCanNotSeeTableRecords([$other]);
+    }
+
     public function test_create_with_valid_data_persists(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));

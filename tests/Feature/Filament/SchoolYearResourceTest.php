@@ -50,4 +50,30 @@ class SchoolYearResourceTest extends TestCase
         Livewire::test(ListSchoolYears::class)->callTableAction('activate', $year);
         $this->assertTrue($year->fresh()->is_active);
     }
+
+    /**
+     * Ported from the deleted tests/Feature/SchoolYearTest.php — pure model
+     * invariant not exercised anywhere else post-cutover.
+     */
+    public function test_active_returns_null_when_no_active_year(): void
+    {
+        $this->assertNull(SchoolYear::active());
+    }
+
+    /**
+     * Ported from the deleted tests/Feature/SchoolYearTest.php — activate()
+     * called via two separately-loaded model instances of the same row must
+     * not create two "active" years.
+     */
+    public function test_activate_is_idempotent_across_reloads(): void
+    {
+        SchoolYear::factory()->create(['name' => '2025-2026', 'is_active' => true]);
+        $year = SchoolYear::factory()->create(['name' => '2026-2027']);
+
+        $year->activate();
+        SchoolYear::firstOrCreate(['name' => '2026-2027'])->activate();
+
+        $this->assertSame(1, SchoolYear::where('is_active', true)->count());
+        $this->assertTrue(SchoolYear::active()->is($year));
+    }
 }
