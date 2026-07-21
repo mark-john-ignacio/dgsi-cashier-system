@@ -23,9 +23,8 @@ class LatestPayments extends TableWidget
                 TextColumn::make('or_number')
                     ->label('OR Number')
                     ->sortable(),
-                TextColumn::make('enrollment.student.name')
-                    ->label('Student Name')
-                    ->sortable(),
+                TextColumn::make('enrollment.student.full_name')
+                    ->label('Student Name'),
                 TextColumn::make('amount')
                     ->label('Amount')
                     ->formatStateUsing(fn ($state) => '₱'.number_format($state, 2))

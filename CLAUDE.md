@@ -28,10 +28,10 @@ MySQL/MariaDB; tests use sqlite `:memory:`.
   actions; reports are the `DailyCollections` and `UnpaidBalances` pages.
   Role gate is via Policies (`app/Policies/**`), not middleware — roles are
   `admin` and `cashier` on `users.role`, checked through `User::isAdmin()`
-  and `FilamentUser::canAccessPanel()`. There is no self-service
-  password-reset or profile-edit page (Filament's `passwordReset()`/
-  `profile()` are not enabled on the panel); an admin resets/edits any
-  user via the Users resource.
+  and `FilamentUser::canAccessPanel()`. Filament's self-service profile
+  page IS enabled (`->profile()` on the panel) — users can edit their own
+  name/email/password. Password reset is NOT enabled (it's mail-dependent);
+  admins reset any user's password via the Users resource.
 - Printables (slips, notices, statements) are plain Blade print views,
   served by `PrintController` (`app/Http/Controllers/PrintController.php`)
   under the `print.*` routes — the only non-Filament, non-`/` routes left

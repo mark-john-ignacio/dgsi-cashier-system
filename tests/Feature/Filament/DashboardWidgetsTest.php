@@ -29,7 +29,11 @@ class DashboardWidgetsTest extends TestCase
         $year = SchoolYear::factory()->create(['is_active' => true]);
         $s = FeeStructure::create(['school_year_id' => $year->id, 'grade_level' => 'Grade 3']);
         $s->items()->create(['fee_type_id' => FeeType::create(['name' => 'Tuition Fee'])->id, 'amount' => 28500]);
-        $this->enrollment = app(RegistrationService::class)->register(Student::factory()->create(), $year, 'Grade 3');
+        $this->enrollment = app(RegistrationService::class)->register(
+            Student::factory()->create(['first_name' => 'Juan', 'last_name' => 'Dela Cruz']),
+            $year,
+            'Grade 3'
+        );
         $this->cashier = User::factory()->create(['role' => 'cashier']);
     }
 
@@ -89,7 +93,7 @@ class DashboardWidgetsTest extends TestCase
             ->assertCanNotSeeTableRecords([$voided, $yesterday])
             ->assertSee('OR-001')
             ->assertSee('OR-002')
-            ->assertSee($this->enrollment->student->name)
+            ->assertSee($this->enrollment->student->full_name)
             ->assertSee('₱1,000.00')
             ->assertSee('₱500.00')
             ->assertSee($this->cashier->name);
