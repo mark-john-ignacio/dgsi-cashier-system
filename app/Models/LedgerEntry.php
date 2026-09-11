@@ -41,4 +41,28 @@ class LedgerEntry extends Model
     {
         return $this->hasMany(PaymentAllocation::class);
     }
+
+    /**
+     * Sum of allocations belonging to non-voided payments. Uses the loaded
+     * `allocations` collection when available (filtering by each allocation's
+     * payment itself, so it does not depend on any eager-load constraint);
+     * otherwise queries with the same voided-payment exclusion.
+     */
+    public function paidAmount(): float
+    {
+        if ($this->relationLoaded('allocations')) {
+            return round((float) $this->allocations
+                ->filter(fn (PaymentAllocation $allocation) => ! $allocation->payment->isVoided())
+                ->sum('amount'), 2);
+        }
+
+        return round((float) $this->allocations()
+            ->whereHas('payment', fn ($q) => $q->whereNull('voided_at'))
+            ->sum('amount'), 2);
+    }
+
+    public function unpaidAmount(): float
+    {
+        return round(max((float) $this->amount - $this->paidAmount(), 0), 2);
+    }
 }

@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use Database\Factories\PaymentFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Payment extends Model
 {
+    /** @use HasFactory<PaymentFactory> */
+    use HasFactory;
+
     protected $fillable = ['enrollment_id', 'school_year_id', 'or_number', 'payment_date',
         'amount', 'method', 'received_by'];
 
